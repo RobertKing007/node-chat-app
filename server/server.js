@@ -15,24 +15,34 @@ var server = http.createServer(app);
 var io = socketIO(server);
 app.use(express.static(publicPath));
 
-//date format
-var dt = new Date();
-var utcDate = dt.toUTCString();
-//
+
 
 io.on('connection', (socket) => {
   console.log('New User Connected');
 
-  socket.emit('newMessage', {
-    from: 'Test dummby 1',
-    text: 'test dummby say hi',
-    createdAt: utcDate
+  socket.emit('welcomeMessage', (welcomeMessage) =>{
+    console.log('welcomeMessage', welcomeMessage);
+    io.emit ('newMessage', {
+      from: 'Admin',
+      text: 'Welcome to the chat app'
+    });
   });
 
+  socket.broadcast.emit ('newMessage', {
+       from: 'Admin',
+       text: 'New User Joined!',
+       createdAt: new Date().getTime()
+  });
 
-socket.on('createMessage', (newMessage) => {
-  console.log('createmessage', newMessage);
+socket.on('createMessage', (message) => {
+  console.log('createmessage', message);
+  io.emit('newMessage', {
+    from: message.from,
+    text: message.text,
+    createdAt: new Date().getTime()
+  });
 });
+
   socket.on('disconnect', () => {
     console.log('Client disconnected');
   });
